@@ -57,17 +57,10 @@ window.customElements.define('progress-ring', ProgressRing);
 let progress = 0;
 const el = document.querySelector('progress-ring');
 
-const paint = () => {
+const timer = setInterval(() => {
 	progress += 1;
 	el.setAttribute('progress', progress);
-	if (progress < 100)
-		window.requestAnimationFrame(paint);
-};
-
-window.addEventListener(
-	'load',
-	function() {
-		window.requestAnimationFrame(paint);
-	},
-	false
-);
+	if (progress === 100000) {
+		clearInterval(timer);
+	}
+}, 100);
