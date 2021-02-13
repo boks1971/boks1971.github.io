@@ -64,4 +64,10 @@ const paint = () => {
 		window.requestAnimationFrame(paint);
 };
 
-window.requestAnimationFrame(paint);
+window.addEventListener(
+	'load',
+	function() {
+		window.requestAnimationFrame(paint);
+	},
+	false
+);
