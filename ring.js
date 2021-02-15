@@ -233,6 +233,7 @@ function playSound() {
 	if (audioEl) {
 		audioEl.play();
 	}
+	window.navigator.vibrate(500);
 }
 
 // TODO
