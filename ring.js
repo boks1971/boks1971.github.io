@@ -53,6 +53,8 @@ class Ring extends HTMLElement {
 
 window.customElements.define('sensory-ring', Ring);
 
+initInput();
+initRing();
 reset();
 
 function getStartButton() {
@@ -77,20 +79,21 @@ function reset() {
 
 function showError(msg) {
 	document.getElementById("error").innerHTML = msg;
-	document.getElementById("error").style.visibility = "visible";
+	document.getElementById("error").style.display = "block";
 }
 
 function hideError() {
 	const el = document.getElementById('error');
-	document.getElementById("error").style.visibility = "hidden";
+	document.getElementById("error").style.display = "none";
+}
+
+function initInput() {
+	const startEl = getStartButton();
+	startEl.addEventListener('click', checkInput);
 }
 
 function showInput() {
-	document.getElementsByName("duration")[0].style.visibility = "visible";
-
-	const startEl = getStartButton();
-	startEl.addEventListener('click', checkInput);
-	startEl.style.visibility = "visible";
+	document.getElementById("input-container").style.display = "block";
 }
 
 function checkInput() {
@@ -119,27 +122,23 @@ function clearInput() {
 }
 
 function hideInput() {
-	document.getElementsByName("duration")[0].style.visibility = "hidden";
-
-	const startEl = getStartButton();
-	startEl.removeEventListener('click', checkInput);
-	startEl.style.visibility = "hidden";
+	document.getElementById("input-container").style.display = "none";
 }
 
 function focusInput() {
 	document.getElementsByName("duration")[0].focus();
 }
 
-function showRing() {
-	document.querySelector('sensory-ring').style.visibility = "visible";
-
+function initRing() {
 	const pauseEl = getPauseButton();
 	pauseEl.addEventListener('click', togglePauseRing);
-	pauseEl.style.visibility = "visible";
 
 	const resetEl = getResetButton();
 	resetEl.addEventListener('click', reset);
-	resetEl.style.visibility = "visible";
+}
+
+function showRing() {
+	document.getElementById('ring-container').style.display = "block";
 }
 
 var timer;
@@ -149,31 +148,18 @@ function hideRing() {
 		clearInterval(timer);
 	}
 
-	document.querySelector('sensory-ring').style.visibility = "hidden";
-
-	const pauseEl = getPauseButton();
-	pauseEl.removeEventListener('click', togglePauseRing);
-	pauseEl.style.visibility = "hidden";
-
-	const resetEl = getResetButton();
-	resetEl.removeEventListener('click', reset);
-	resetEl.style.visibility = "hidden";
+	document.getElementById('ring-container').style.display = "none";
 }
 
 let isRingPaused = false;
 let pausedAt = 0;
 let pausedTime = 0;
 
-function resetRing() {
-	const el = document.querySelector('sensory-ring');
-	el.setAttribute('progress', 0);
-}
-
 function launchRing(totalTime) {
-	resetRing();
-	showRing();
-
 	isRingPaused = false;
+	pausedAt = 0;
+	pausedTime = 0;
+	handlePauseResume();
 
 	let progress = 0;
 	const el = document.querySelector('sensory-ring');
@@ -189,10 +175,16 @@ function launchRing(totalTime) {
 		progress = elapsedTime * 100 / totalTime;
 		el.setAttribute('progress', progress);
 	}, timerInterval);
+
+	showRing();
 }
 
 function togglePauseRing() {
 	isRingPaused = !isRingPaused;
+	handlePauseResume();
+}
+
+function handlePauseResume() {
 	if (isRingPaused) {
 		getPauseButton().textContent ='Resume';
 		pausedAt = Date.now();
