@@ -6,14 +6,19 @@
 	</head>
 
 	<body>
-		<progress-ring stroke="20" radius="120" progress="0"></progress-ring>
-		<script src="./ring.js"></script>
-		<!--
-		<div class="wrapper" data-anim="base wrapper">
-  			<div class="circle" data-anim="base left"></div>
-  			<div class="circle" data-anim="base right"></div>
+		<div>
+			<input type="number" id="duration" name="duration" placeholder="Enter duration in minutes" min="1">
+			<button id="start-button" type="button">Start</button>
+			<div id="error"></div>
 		</div>
-		-->
+		<div>
+			<sensory-ring stroke="20" radius="120" progress="0"></sensory-ring>
+			<div>
+				<button id="pause-button" type="button">Pause</button>
+				<button id="reset-button" type="button">Reset</button>
+			</div>
+		</div>
+		<script src="./ring.js"></script>
 	</body>
 </html>
 
