@@ -71,6 +71,7 @@ window.customElements.define('sensory-ring', Ring);
 
 initInput();
 initRing();
+initSound();
 reset();
 
 function getStartButton() {
@@ -178,6 +179,7 @@ function launchRing(totalTime) {
 	handlePauseResume();
 
 	let progress = 0;
+	let counter = 0;
 	const el = document.querySelector('sensory-ring');
 	el.setAttribute('progress', progress);
 	el.setAttribute('counter', 0);
@@ -191,7 +193,13 @@ function launchRing(totalTime) {
 		const elapsedTime = Date.now() - startTime - pausedTime;
 		progress = elapsedTime * 100 / totalTime;
 		el.setAttribute('progress', progress);
-		el.setAttribute('counter', Math.floor(elapsedTime / totalTime));
+
+		const newCounter = Math.floor(elapsedTime / totalTime);
+		if (newCounter !== counter) {
+			playSound();
+		}
+		counter = newCounter;
+		el.setAttribute('counter', counter);
 	}, timerInterval);
 
 	showRing();
@@ -215,6 +223,17 @@ function handlePauseResume() {
 	}
 }
 
+var audioEl;
+
+function initSound() {
+	audioEl = new Audio('./got-it-done-613.mp3');
+}
+
+function playSound() {
+	if (audioEl) {
+		audioEl.play();
+	}
+}
 
 // TODO
 // Show input box in landing screen with a go button
