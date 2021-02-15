@@ -236,6 +236,9 @@ function playSound() {
 	window.navigator.vibrate(500);
 }
 
-// TODO
-// Show input box in landing screen with a go button
 // Reference: https://css-tricks.com/building-progress-ring-quickly/
+
+// TODO
+// - no input box, just four options, 5, 10, 15, 30
+// - Count iteration up to 1 hour and reset back to 0
+// - Outline circle with circle getting filled in
