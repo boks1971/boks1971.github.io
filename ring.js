@@ -22,6 +22,15 @@ class Ring extends HTMLElement {
 					cx="${radius}"
 					cy="${radius}"
 				/>
+				<text
+					id="ring-counter"
+					x="50%"
+					y="50%"
+					text-anchor="middle"
+					fill="white"
+					font-size="6em"
+					dy=".3em"
+				/>
 			</svg>
 
 			<style>
@@ -40,13 +49,20 @@ class Ring extends HTMLElement {
 		circle.style.strokeDashoffset = offset; 
 	}
 
+	setCounter(count) {
+		const text = this._root.querySelector('text');
+		text.textContent = count;
+	}
+
 	static get observedAttributes() {
-		return ['progress'];
+		return ['progress', 'counter'];
 	}
 
 	attributeChangedCallback(name, oldValue, newValue) {
 		if (name === 'progress') {
 			this.setProgress(newValue);
+		} else if (name === 'counter') {
+			this.setCounter(newValue);
 		}
 	}
 }
@@ -164,6 +180,7 @@ function launchRing(totalTime) {
 	let progress = 0;
 	const el = document.querySelector('sensory-ring');
 	el.setAttribute('progress', progress);
+	el.setAttribute('counter', 0);
 
 	const timerInterval = 50;
 	const startTime = Date.now();
@@ -174,6 +191,7 @@ function launchRing(totalTime) {
 		const elapsedTime = Date.now() - startTime - pausedTime;
 		progress = elapsedTime * 100 / totalTime;
 		el.setAttribute('progress', progress);
+		el.setAttribute('counter', Math.floor(elapsedTime / totalTime));
 	}, timerInterval);
 
 	showRing();
