@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Sensory Timer</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel = "stylesheet" type = "text/css" href = "./style.css">
+	</head>
+
+	<body>
+		<div>
+			<div id="input-container" style="display: none">
+				<input type="number" id="duration" name="duration" placeholder="Enter duration in minutes" min="1">
+				<button id="start-button" type="button">Start</button>
+				<div id="error"></div>
+			</div>
+			<div id="ring-container" style="display: none">
+				<sensory-ring stroke="20" radius="160" progress="0"></sensory-ring>
+				<div id="ring-button-container">
+					<button id="pause-button" type="button">Pause</button>
+					<button id="reset-button" type="button">Reset</button>
+				</div>
+			</div>
+		</div>
+		<script src="./ring.js"></script>
+	</body>
+</html>
+
