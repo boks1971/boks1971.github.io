@@ -3,7 +3,7 @@
 	<head>
 		<title>Sensory Timer</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<link rel = "stylesheet" type = "text/css" href = "./style.css">
+		<link rel = "stylesheet" type = "text/css" href = "../style.css">
 	</head>
 
 	<body>
@@ -13,15 +13,26 @@
 				<button id="start-button" type="button">Start</button>
 				<div id="error"></div>
 			</div>
+			<div id="input-button-container" style="display: none">
+				<div id="input-button-prompt">
+					Select a time
+				</div>
+				<div id="input-buttons-container">
+					<button id="5min-button" ring-duration=5 type="button" class="button-small">5 min</button>
+					<button id="10min-button" ring-duration=10 type="button" class="button-small">10 min</button>
+					<button id="15min-button" ring-duration=15 type="button" class="button-small">15 min</button>
+					<button id="30min-button" ring-duration=30 type="button" class="button-small">30 min</button>
+				</div>
+			</div>
 			<div id="ring-container" style="display: none">
-				<sensory-ring stroke="20" radius="160" progress="0"></sensory-ring>
-				<div id="ring-button-container">
-					<button id="pause-button" type="button">Pause</button>
-					<button id="reset-button" type="button">Reset</button>
+				<sensory-ring stroke="30" radius="160" progress="0" ring-mode="countdown-timer"></sensory-ring>
+				<div id="ring-buttons-container">
+					<button id="pause-button" type="button" class="button-large">Pause</button>
+					<button id="reset-button" type="button" class="button-large">Reset</button>
 				</div>
 			</div>
 		</div>
-		<script src="./ring.js"></script>
+		<script src="../ring.js"></script>
 	</body>
 </html>
 

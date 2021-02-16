@@ -8,6 +8,13 @@ class Ring extends HTMLElement {
 		const innerRadius = normalizedRadius - stroke / 2;
 		this._circumference = normalizedRadius * 2 * Math.PI;
 
+		this._ringMode = this.getAttribute('ring-mode');
+
+		let textFontSize = '6em';
+		if (this._ringMode === 'countdown-timer') {
+			textFontSize = '2em';
+		}
+
 		this._root = this.attachShadow({mode: 'open'});
 		this._root.innerHTML = `
 			<svg
@@ -47,7 +54,7 @@ class Ring extends HTMLElement {
 					y="50%"
 					text-anchor="middle"
 					fill="white"
-					font-size="6em"
+					font-size="${textFontSize}"
 					dy=".3em"
 				/>
 			</svg>
@@ -69,12 +76,29 @@ class Ring extends HTMLElement {
 	}
 
 	setCounter(count) {
+		if (this._ringMode !== 'counter') return;
+
 		const text = this._root.getElementById('ring-counter');
 		text.textContent = count;
 	}
 
+	setRemainingTime(remainingMs) {
+		if (this._ringMode !== 'countdown-timer') return;
+
+		const zfill = (num, len) => (Array(len).join("0") + num).slice(-len);
+
+		let remainingSecs = Math.ceil(remainingMs / 1000);
+		const hours = Math.floor(remainingSecs / (60 * 60));
+		remainingSecs = remainingSecs - (hours * 60 * 60);
+		const minutes = Math.floor(remainingSecs / 60);
+		remainingSecs = remainingSecs - (minutes * 60);
+
+		const text = this._root.getElementById('ring-counter');
+		text.textContent = zfill(hours, 2) + ':' + zfill(minutes, 2) + ':' + zfill(remainingSecs, 2);
+	}
+
 	static get observedAttributes() {
-		return ['progress', 'counter'];
+		return ['progress', 'counter', 'remaining-time'];
 	}
 
 	attributeChangedCallback(name, oldValue, newValue) {
@@ -82,13 +106,18 @@ class Ring extends HTMLElement {
 			this.setProgress(newValue);
 		} else if (name === 'counter') {
 			this.setCounter(newValue);
+		} else if (name === 'remaining-time') {
+			this.setRemainingTime(newValue);
 		}
 	}
 }
 
 window.customElements.define('sensory-ring', Ring);
 
+const inputMode = 'buttons';
+
 initInput();
+initInputButtons();
 initRing();
 initSounds();
 reset();
@@ -108,9 +137,13 @@ function getResetButton() {
 function reset() {
 	hideRing();
 	hideError();
-	clearInput();
-	showInput();
-	focusInput();
+	if (inputMode === 'buttons') {
+		showInputButtons();
+	} else {
+		clearInput();
+		showInput();
+		focusInput();
+	}
 }
 
 function showError(msg) {
@@ -165,6 +198,26 @@ function focusInput() {
 	document.getElementsByName("duration")[0].focus();
 }
 
+function initInputButtons() {
+	document.getElementById('5min-button').addEventListener('click', checkInputButtons);
+	document.getElementById('10min-button').addEventListener('click', checkInputButtons);
+	document.getElementById('15min-button').addEventListener('click', checkInputButtons);
+	document.getElementById('30min-button').addEventListener('click', checkInputButtons);
+}
+
+function showInputButtons() {
+	document.getElementById("input-button-container").style.display = "block";
+}
+
+function checkInputButtons(e) {
+	hideInputButtons();
+	launchRing(e.target.getAttribute('ring-duration') * 60 * 1000);
+}
+
+function hideInputButtons() {
+	document.getElementById("input-button-container").style.display = "none";
+}
+
 function initRing() {
 	const pauseEl = getPauseButton();
 	pauseEl.addEventListener('click', togglePauseRing);
@@ -199,8 +252,9 @@ function launchRing(lapTimeMs) {
 
 	let lapCounter = 0;
 	const el = document.querySelector('sensory-ring');
-	el.setAttribute('progress', 0);
 	el.setAttribute('counter', lapCounter);
+	el.setAttribute('remaining-time', lapTimeMs);
+	el.setAttribute('progress', 0);
 
 	// Time at which lap counter is reset to 0.
 	const resetDurationMs = 1 * 60 * 60 * 1000;	// 1 hour in ms
@@ -214,6 +268,7 @@ function launchRing(lapTimeMs) {
 		const now = Date.now();
 
 		const elapsedTimeMs = now - startTimeMs - pausedTimeMs;
+
 		const resetCounterNow = Math.floor(elapsedTimeMs / resetDurationMs);
 		const resetCounterPrev = Math.floor((elapsedTimeMs - timerIntervalMs > 0 ? elapsedTimeMs - timerIntervalMs : 0) / resetDurationMs);
 		let progress;
@@ -235,8 +290,15 @@ function launchRing(lapTimeMs) {
 			lapCounter = lapCounterNow;
 			progress = elapsedTimeMs * 100 / lapTimeMs;
 		}
+
 		el.setAttribute('counter', lapCounter);
 		el.setAttribute('progress', progress);
+
+		let remainingMs = lapTimeMs - elapsedTimeMs;
+		while (remainingMs < 0) {
+			remainingMs += lapTimeMs;
+		}
+		el.setAttribute('remaining-time', remainingMs);
 	}, timerIntervalMs);
 
 	showRing();
