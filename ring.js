@@ -4,6 +4,8 @@ class Ring extends HTMLElement {
 		const stroke = this.getAttribute('stroke');
 		const radius = this.getAttribute('radius');
 		const normalizedRadius = radius - stroke * 2;
+		const outerRadius = normalizedRadius + stroke / 2;
+		const innerRadius = normalizedRadius - stroke / 2;
 		this._circumference = normalizedRadius * 2 * Math.PI;
 
 		this._root = this.attachShadow({mode: 'open'});
@@ -14,11 +16,28 @@ class Ring extends HTMLElement {
 			>
 				<circle
 					stroke="white"
+					stroke-width=1px
+					fill="transparent"
+					r="${innerRadius}"
+					cx="${radius}"
+					cy="${radius}"
+				/>
+				<circle
+					id="painted-ring"
+					stroke="white"
 					stroke-dasharray="${this._circumference} ${this._circumference}"
 					style="stroke-dashoffset:${this._circumference}"
 					stroke-width="${stroke}"
 					fill="transparent"
 					r="${normalizedRadius}"
+					cx="${radius}"
+					cy="${radius}"
+				/>
+				<circle
+					stroke="white"
+					stroke-width=1px
+					fill="transparent"
+					r="${outerRadius}"
 					cx="${radius}"
 					cy="${radius}"
 				/>
@@ -34,7 +53,7 @@ class Ring extends HTMLElement {
 			</svg>
 
 			<style>
-				circle {
+				#painted-ring {
 					transition: stroke-dashoffset 0.35s;
 					transform: rotate(-90deg);
 					transform-origin: 50% 50%;
@@ -45,12 +64,12 @@ class Ring extends HTMLElement {
   
 	setProgress(percent) {
 		const offset = this._circumference - (percent / 100 * this._circumference);
-		const circle = this._root.querySelector('circle');
+		const circle = this._root.getElementById('painted-ring');
 		circle.style.strokeDashoffset = offset; 
 	}
 
 	setCounter(count) {
-		const text = this._root.querySelector('text');
+		const text = this._root.getElementById('ring-counter');
 		text.textContent = count;
 	}
 
@@ -71,7 +90,7 @@ window.customElements.define('sensory-ring', Ring);
 
 initInput();
 initRing();
-initSound();
+initSounds();
 reset();
 
 function getStartButton() {
@@ -169,38 +188,56 @@ function hideRing() {
 }
 
 let isRingPaused = false;
-let pausedAt = 0;
-let pausedTime = 0;
+let pausedAtMs = 0;
+let pausedTimeMs = 0;
 
-function launchRing(totalTime) {
+function launchRing(lapTimeMs) {
 	isRingPaused = false;
-	pausedAt = 0;
-	pausedTime = 0;
+	pausedAtMs = 0;
+	pausedTimeMs = 0;
 	handlePauseResume();
 
-	let progress = 0;
-	let counter = 0;
+	let lapCounter = 0;
 	const el = document.querySelector('sensory-ring');
-	el.setAttribute('progress', progress);
-	el.setAttribute('counter', 0);
+	el.setAttribute('progress', 0);
+	el.setAttribute('counter', lapCounter);
 
-	const timerInterval = 50;
-	const startTime = Date.now();
+	// Time at which lap counter is reset to 0.
+	const resetDurationMs = 1 * 60 * 60 * 1000;	// 1 hour in ms
+
+	const timerIntervalMs = 50;
+	let startTimeMs = Date.now();
 
 	timer = setInterval(() => {
 		if (isRingPaused) return;
 
-		const elapsedTime = Date.now() - startTime - pausedTime;
-		progress = elapsedTime * 100 / totalTime;
-		el.setAttribute('progress', progress);
+		const now = Date.now();
 
-		const newCounter = Math.floor(elapsedTime / totalTime);
-		if (newCounter !== counter) {
-			playSound();
+		const elapsedTimeMs = now - startTimeMs - pausedTimeMs;
+		const resetCounterNow = Math.floor(elapsedTimeMs / resetDurationMs);
+		const resetCounterPrev = Math.floor((elapsedTimeMs - timerIntervalMs > 0 ? elapsedTimeMs - timerIntervalMs : 0) / resetDurationMs);
+		let progress;
+		if (resetCounterNow !== resetCounterPrev) {
+			playLongSound();
+			window.navigator.vibrate(2000);
+
+			startTimeMs = now;
+			pausedAtMs = 0;
+			pausedTimeMs = 0;
+			lapCounter = 0;
+			progress = 0;
+		} else  {
+			const lapCounterNow = Math.floor(elapsedTimeMs / lapTimeMs);
+			if (lapCounterNow !== lapCounter) {
+				playLapSound();
+				window.navigator.vibrate(500);
+			}
+			lapCounter = lapCounterNow;
+			progress = elapsedTimeMs * 100 / lapTimeMs;
 		}
-		counter = newCounter;
-		el.setAttribute('counter', counter);
-	}, timerInterval);
+		el.setAttribute('counter', lapCounter);
+		el.setAttribute('progress', progress);
+	}, timerIntervalMs);
 
 	showRing();
 }
@@ -213,32 +250,39 @@ function togglePauseRing() {
 function handlePauseResume() {
 	if (isRingPaused) {
 		getPauseButton().textContent ='Resume';
-		pausedAt = Date.now();
+		pausedAtMs = Date.now();
 	} else {
 		getPauseButton().textContent ='Pause';
-		if (pausedAt > 0) {
-			pausedTime += Date.now() - pausedAt;
+		if (pausedAtMs > 0) {
+			pausedTimeMs += Date.now() - pausedAtMs;
 		}
-		pausedAt = 0;
+		pausedAtMs = 0;
 	}
 }
 
-var audioEl;
+var lapAudio;
+var longAudio;
 
-function initSound() {
-	audioEl = new Audio('./got-it-done-613.mp3');
+function initSounds() {
+	lapAudio = new Audio('./got-it-done-613.mp3');
+	longAudio = new Audio('./oringz-w437-339.mp3');
 }
 
-function playSound() {
-	if (audioEl) {
-		audioEl.play();
-	}
-	window.navigator.vibrate(500);
+function playLapSound() {
+	if (!lapAudio) return;
+
+	lapAudio.play();
+}
+
+function playLongSound() {
+	if (!longAudio) return;
+
+	longAudio.play();
 }
 
 // Reference: https://css-tricks.com/building-progress-ring-quickly/
 
 // TODO
 // - no input box, just four options, 5, 10, 15, 30
-// - Count iteration up to 1 hour and reset back to 0
 // - Outline circle with circle getting filled in
+// - Counter timer mode
