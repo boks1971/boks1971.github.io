@@ -288,7 +288,7 @@ function launchRing(lapTimeMs) {
 				window.navigator.vibrate(500);
 			}
 			lapCounter = lapCounterNow;
-			progress = elapsedTimeMs * 100 / lapTimeMs;
+			progress = (elapsedTimeMs * 100 / lapTimeMs) % 100;
 		}
 
 		el.setAttribute('counter', lapCounter);
