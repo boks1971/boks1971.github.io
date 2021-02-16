@@ -119,7 +119,6 @@ const inputMode = 'buttons';
 initInput();
 initInputButtons();
 initRing();
-initSounds();
 reset();
 
 function getStartButton() {
@@ -322,21 +321,15 @@ function handlePauseResume() {
 	}
 }
 
-var lapAudio;
-var longAudio;
-
-function initSounds() {
-	lapAudio = new Audio('./got-it-done-613.mp3');
-	longAudio = new Audio('./oringz-w437-339.mp3');
-}
-
 function playLapSound() {
+	const lapAudio = new Audio('../got-it-done-613.mp3');
 	if (!lapAudio) return;
 
 	lapAudio.play();
 }
 
 function playLongSound() {
+	const longAudio = new Audio('../oringz-w437-339.mp3');
 	if (!longAudio) return;
 
 	longAudio.play();
