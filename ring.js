@@ -343,8 +343,3 @@ function playLongSound() {
 }
 
 // Reference: https://css-tricks.com/building-progress-ring-quickly/
-
-// TODO
-// - no input box, just four options, 5, 10, 15, 30
-// - Outline circle with circle getting filled in
-// - Counter timer mode
